@@ -5,9 +5,10 @@ import sys
 # Loads words from @file into dictionary WordList (words should be delimited by whitespace)
 # keys: words being searched
 # values: str array of filespaths and line numbers where each word is found
-def LoadWordList(file):
+def LoadWordList(file, case_sensitive):
     with open(file, 'r') as f:
-        return {word: [] for word in f.read().split()}
+        words = f.read().split()
+        return {word if case_sensitive else word.lower(): [] for word in words}
 
 # Returns filename, unless file with that name already exists, in which case it adds an '_#' to the name
 def GetAvailableFilename(base):
@@ -71,9 +72,10 @@ if __name__ == "__main__":
 
     # User Supplied Arguments
     scanned_path = sys.argv[1]
-    wordlist = LoadWordList(sys.argv[2])
     output_file = sys.argv[3]
     case_sensitive = len(sys.argv) == 5 and sys.argv[4].lower() == 'true' # Optional, Default is False
+    # Is loaded out of order to factor in case sensitivity
+    wordlist = LoadWordList(sys.argv[2], case_sensitive)
 
     ScanFiles(scanned_path, wordlist, case_sensitive)
     WriteOutput(output_file, wordlist)
