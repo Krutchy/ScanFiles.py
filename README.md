@@ -22,7 +22,7 @@ Whether you want case sensitivity for the words being searched.
 - In the output, the words in the wordlist will be written as they were in that file, regardless of case.
 
 ## The following are examples of what calling the function would look like:
-python ScanFiles.py searchDirectory wordList.txt output.txt 
-python ScanFiles.py searchDirectory wordListFilePath output.txt True
-python ScanFiles.py searchDirectory wordListFilePath output.txt False
+python ScanFiles.py searchDirectory wordList.txt output.txt </br>
+python ScanFiles.py searchDirectory wordListFilePath output.txt True </br>
+python ScanFiles.py searchDirectory wordListFilePath output.txt False </br>
 python ScanFiles.py searchDirectory wordListFilePath output.csv True 
