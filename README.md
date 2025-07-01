@@ -1,5 +1,7 @@
 # WordFileScan
 The function provided has four arguments:
+python ScanFiles.py scanned_filepath word_list_filepath output_file_base_name case_sensitive
+
 ## @str scanned_filepath
 This is the filepath that will be searched through by the script. 
 - You can use a local filepath (same directory as ScanFiles.py)
