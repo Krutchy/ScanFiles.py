@@ -16,7 +16,7 @@ This is the name you want for the output file.
 - If a file with the given name already exists, a file with the name and a number added to the end will be created instead (e.g., 'output_1.txt', 'output_2.txt').
 - File will be written to same directory as ScanFiles.py
 
-## (Optional) @bool case_sensitive
+## @bool case_sensitive (Optional)
 Whether you want case sensitivity for the words being searched.
 - The file contents and the wordlist will both be affected during the search.
 - In the output, the words in the wordlist will be written as they were in that file, regardless of case.
