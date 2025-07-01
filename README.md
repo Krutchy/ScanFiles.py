@@ -1,5 +1,5 @@
 # WordFileScan
-The function provided has four arguments:
+The function provided has four arguments: </br>
 python ScanFiles.py scanned_filepath word_list_filepath output_file_base_name case_sensitive
 
 ## @str scanned_filepath
