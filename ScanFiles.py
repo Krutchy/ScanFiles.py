@@ -1,9 +1,9 @@
-import ahocorasick
-import argparse
-import csv
-import os
-import sys
-from tqdm import tqdm
+import ahocorasick         # https://pyahocorasick.readthedocs.io/en/latest/
+import argparse            # https://docs.python.org/3/library/argparse.html
+import csv                 # https://docs.python.org/3/library/csv.html
+import os                  # https://docs.python.org/3/library/os.html
+import sys                 # https://docs.python.org/3/library/sys.html
+from tqdm import tqdm      # https://github.com/tqdm/tqdm
 
 def LoadTermList(file, case_sensitive):
     '''
