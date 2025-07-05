@@ -167,7 +167,10 @@ if __name__ == "__main__":
     parser.add_argument("--overwrite_allowed", action="store_true", help="Allow overwriting if a file already exists at the specified location (default: False)")
 
     args = parser.parse_args()
-
-    termList = LoadTermList(args.term_list_filepath, args.case_sensitive)
-    ScanFiles(args.scanned_filepath, termList, args.case_sensitive)
-    WriteOutput(args.output_file_base_name, termList, args.overwrite_allowed)
+    try:
+        termList = LoadTermList(args.term_list_filepath, args.case_sensitive)
+        ScanFiles(args.scanned_filepath, termList, args.case_sensitive)
+        WriteOutput(args.output_file_base_name, termList, args.overwrite_allowed)
+    except KeyboardInterrupt: # Usually Ctrl+C
+        print("\nScan stopped by user. Exiting script.")
+        sys.exit(0)
