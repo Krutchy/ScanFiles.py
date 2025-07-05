@@ -157,6 +157,7 @@ def WriteOutput(base_name, termList, overwrite_allowed=False):
                 writer.writerow([term, 'N/A', 'N/A'])                                                       # Write 'N/A' to filepath and line number columns.
 
 
+# Running the script
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scan files for terms and generate output.")
     parser.add_argument("scanned_filepath", help="Path to the file or directory to scan")
