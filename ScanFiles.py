@@ -56,7 +56,9 @@ def ScanFiles(path, wordlist, case_sensitive):
                     check_line = line if case_sensitive else line.lower()
                     for word in wordlist:
                         target = word if case_sensitive else word.lower()
-                        if target in check_line:
+                        # Use regex to find exact matches, respecting case sensitivity
+                        pattern = re.compile(rf'\b{re.escape(target)}\b' if case_sensitive else rf'\b{re.escape(target)}\b', re.IGNORECASE if not case_sensitive else 0)
+                        if pattern.search(line):
                             wordlist[word].append((os.path.relpath(filepath, start=path), i))
         except:
             pass
