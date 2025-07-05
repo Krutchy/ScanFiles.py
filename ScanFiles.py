@@ -52,16 +52,24 @@ def ScanFiles(path, wordlist, case_sensitive):
     for filepath in tqdm(all_files, desc="Scanning files", unit="file"):
         try:
             with open(filepath, 'r', encoding='utf-8-sig', errors='ignore') as f:
-                for i, line in enumerate(f, 1):
-                    check_line = line if case_sensitive else line.lower()
-                    for word in wordlist:
-                        target = word if case_sensitive else word.lower()
-                        # Use regex to find exact matches, respecting case sensitivity
-                        pattern = re.compile(rf'\b{re.escape(target)}\b' if case_sensitive else rf'\b{re.escape(target)}\b', re.IGNORECASE if not case_sensitive else 0)
-                        if pattern.search(line):
-                            wordlist[word].append((os.path.relpath(filepath, start=path), i))
+                content = f.read()
+                lines = content.splitlines()
+                # Use content with or without case
+                content_check = content if case_sensitive else content.lower()
+
+                for word in wordlist:
+                    target = word if case_sensitive else word.lower()
+                    # Match whole words only
+                    pattern = re.compile(rf'(?<!\w){re.escape(target)}(?!\w)', 0 if case_sensitive else re.IGNORECASE)
+
+                    for match in pattern.finditer(content_check):
+                        # Find line number from character index
+                        line_num = content_check.count('\n', 0, match.start()) + 1
+                        rel_path = os.path.relpath(filepath, start=path)
+                        wordlist[word].append((rel_path, line_num))
         except:
             pass
+
 
 
 
