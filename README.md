@@ -1,31 +1,24 @@
 # WordFileScan
-The function provided has four arguments: </br>
-### python ScanFiles.py <str: scanned_filepath> <str: word_list_filepath> <str: output_file_base_name> <bool: case_sensitive (Optional)>
+Scans given files for a given list of terms and returns the filepaths and line numbers where every term was found. Terms that are not found in any files only appear once, with the filepath and line number marked 'N/A'.
 
-## @str scanned_filepath
-This is the filepath that will be searched through by the script. 
-- You can use a local filepath (same directory as ScanFiles.py)
-- Files will be searched directly.
-- Directories will call ScanFiles recursively.
+## Running the Script
+You can run the script by opening a terminal in its directory (or specifying the filepath to it) and running:
+```
+python ScanFiles.py {scanned_filepath}
+```
 
-## @str word_list_filepath
-This is the filepath containing the file that has the words this script will search for.
-- You can use a local filepath (same directory as ScanFiles.py)
-- Words should be delimited by whitespace.
-- Words are not case sensitive unless that is specified (in later arg).
+It can also take several additional arguments if you don't want to use their defaults:
+```
+--term_list_filepath **TERM_LIST_FILEPATH**
+                        Path to the term list file (default: 'termList.csv')
+--output_file_base_name **OUTPUT_FILE_BASE_NAME**
+                        Base name for the output file (default: 'output.csv')
+--case_sensitive        Enable case-sensitive term matching (default: False)
+--overwrite_allowed     Allow overwriting if a file already exists at the specified location (default: False)
+```
 
-## @str output_file_base_name
-This is the name you want for the output file. 
-- The file type should be specified ('.txt' or '.csv').
-- If a file with the given name already exists, a file with the name and a number added to the end will be created instead (e.g., 'output_1.txt', 'output_2.txt').
-- File will be written to same directory as ScanFiles.py
-
-## @bool case_sensitive (Optional)
-Whether you want case sensitivity for the words being searched.
-- The file contents and the wordlist will both be affected during the search.
-
-## The following are examples of what calling the function would look like:
-python ScanFiles.py searchDirectory wordList.txt output.txt </br>
-python ScanFiles.py searchDirectory wordListFilePath output.txt True </br>
-python ScanFiles.py searchDirectory wordListFilePath output.txt False </br>
-python ScanFiles.py searchDirectory wordListFilePath output.csv True 
+It's possible that this readme is not up to date, in which case you can check the script's syntax and args by running
+```python ScanFiles.py --help```
+in the terminal.
+## Unit Testing
+This script has a separate file for unit testing at the same location called 'ScanFilesTest.py', which you can run in the terminal to confirm that everything still works.
