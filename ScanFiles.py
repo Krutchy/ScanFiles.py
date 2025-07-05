@@ -1,4 +1,5 @@
 import os
+import re
 import csv
 import sys
 
@@ -35,7 +36,7 @@ def WriteOutput(base_name, wordList):
             if entries:
                 writer.writerows([[word, path, line] for path, line in entries])
             else:
-                writer.writerow([word, 'N/A', '0'])
+                writer.writerow([word, 'N/A', 'N/A'])
 
 # Scans files at @path to populate the @wordList with files where words are found.
 def ScanFiles(path, wordlist, case_sensitive):
@@ -51,13 +52,11 @@ def ScanFiles(path, wordlist, case_sensitive):
             with open(path, 'r', encoding='utf-8', errors='ignore') as f:
                 # Read line by line, starting at line 1
                 for i, line in enumerate(f, 1):
-                    # Read contents of line (delimited by whitespace)
-                    words = line.split()
-                    lookup = set(words if case_sensitive else [w.lower() for w in words])
+                    # Read contents of line
+                    check_line = line if case_sensitive else line.lower()
                     for word in wordlist:
                         target = word if case_sensitive else word.lower()
-                        # Add filepath and line number to wordList at the word's key if it shows up
-                        if target in lookup:
+                        if target in check_line:
                             wordlist[word].append((os.path.abspath(path), i))
         except:
             pass # Silently ignore unreadable files
