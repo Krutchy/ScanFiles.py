@@ -163,7 +163,7 @@ if __name__ == "__main__":
     parser.add_argument("--term_list_filepath", default="termList.csv", help="Path to the term list file (default: 'termList.csv')")
     parser.add_argument("--output_file_base_name", default="output.csv", help="Base name for the output file (default: 'output.csv')")
     parser.add_argument("--case_sensitive", action="store_true", help="Enable case-sensitive term matching (default: False)")
-    parser.add_argument("--overwrite_allowed", action="store_true", help="Allow overwriting of existing output file (default: False)")
+    parser.add_argument("--overwrite_allowed", action="store_true", help="Allow overwriting if a file already exists at the specified location (default: False)")
 
     args = parser.parse_args()
 
