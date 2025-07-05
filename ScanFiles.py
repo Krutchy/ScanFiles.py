@@ -1,5 +1,6 @@
 import os
 import re
+from tqdm import tqdm
 import csv
 import sys
 
@@ -7,7 +8,7 @@ import sys
 # keys: words being searched
 # values: str array of filespaths and line numbers where each word is found
 def LoadWordList(file, case_sensitive):
-    with open(file, 'r') as f:
+    with open(file, 'r', encoding='utf-8-sig') as f:
         words = f.read().split()
         return {word if case_sensitive else word.lower(): [] for word in words}
 
@@ -38,28 +39,28 @@ def WriteOutput(base_name, wordList):
             else:
                 writer.writerow([word, 'N/A', 'N/A'])
 
-# Scans files at @path to populate the @wordList with files where words are found.
+def GetAllFiles(path):
+    files = []
+    for root, _, filenames in os.walk(path):
+        for filename in filenames:
+            files.append(os.path.join(root, filename))
+    return files
+
 def ScanFiles(path, wordlist, case_sensitive):
-    # If path is directory:
-    if os.path.isdir(path):
-        # For each item in directory:
-        for item in os.listdir(path):
-            # Directories perform recursive calls to search their contents.
-            ScanFiles(os.path.join(path, item), wordlist, case_sensitive)
-    # If path is file:
-    else:
+    all_files = GetAllFiles(path) if os.path.isdir(path) else [path]
+
+    for filepath in tqdm(all_files, desc="Scanning files", unit="file"):
         try:
-            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-                # Read line by line, starting at line 1
+            with open(filepath, 'r', encoding='utf-8-sig', errors='ignore') as f:
                 for i, line in enumerate(f, 1):
-                    # Read contents of line
                     check_line = line if case_sensitive else line.lower()
                     for word in wordlist:
                         target = word if case_sensitive else word.lower()
                         if target in check_line:
-                            wordlist[word].append((os.path.abspath(path), i))
+                            wordlist[word].append((os.path.relpath(filepath, start=path), i))
         except:
-            pass # Silently ignore unreadable files
+            pass
+
 
 
 # Run Script
