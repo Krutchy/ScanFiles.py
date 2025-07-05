@@ -51,7 +51,7 @@ def BuildAutomaton(terms, case_sensitive):
     in structure but have invocable methods similar to a dict in Python.
     It's possible to serialize or 'pickle' an automaton so it wouldn't 
     need to be rebuilt each time the script is ran (which might be more 
-    performant for larger wordlists) but that isn't done in this script.
+    performant for larger lists of terms) but that isn't done in this script.
 
     Args:
         terms (str[]): the keys from the termList created by LoadTermList
