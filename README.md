@@ -36,7 +36,7 @@ A few extra notes:
 - If a file already exists with the name you specified for the output (and you didn't allow overwriting), the resulting file find the first available name with a '_#' at the end to write to instead. For example, if 'output.csv' is taken, the script will check if 'output_1.csv' is taken, then 'output_2.csv', and so on until an available name is found, which will then be the output file's name.
 - The terms in the termlist file are assumed to be delimited by whitespace. If the termlist file isn't found at the path you specified (or the default), it will raise an error and exit.
 - While searching, the script quietly passes over files it determines to be unreadable.
-- Terms are not searched inclusively: searching for '**apple**' for example would not return lines in a file containing '**apple1**' or '**badapple**'. This is intentional, as it's assumed some terms will be similar and a user likely wouldn't want files returned just because they contained a term that contains another term.
+- Terms are not searched inclusively: searching for '**apple**' would not return lines in a file containing '**apple1**' or '**badapple**'. There is an exception, however, for non-alphanumeric characters (like quotes or parentheses). This is intentional, as it's assumed some terms will be similar and a user likely wouldn't want files returned just because they contained a term that contains another term.
 - The script doesn't care if a term appears in any given line more than once.
 ## Unit Testing
 This script has a separate file for unit testing in the same location as the main script. During development, you can confirm that everything works by running:
