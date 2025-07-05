@@ -1,10 +1,9 @@
-import os
-import re
-from tqdm import tqdm
-import csv
-import sys
 import ahocorasick
 import argparse
+import csv
+import os
+import sys
+from tqdm import tqdm
 
 def LoadTermList(file, case_sensitive):
     '''
@@ -27,51 +26,6 @@ def LoadTermList(file, case_sensitive):
     with open(file, 'r', encoding='utf-8-sig') as f:                                # utf-8-sig used as certain encodings have hidden characters
         terms = f.read().split()                                                    # File should be delimited by whitespace.
         return {term if case_sensitive else term.lower(): [] for term in terms}
-
-def GetAvailableFilename(base, overwrite_allowed=False):
-    '''
-    If you don't want to overwrite an existing file, this function ensures that
-    repeatedly running this script with the same name for the output will
-    instead write the output to the next available name. For example, if
-    'output.csv' is taken, then this function will check if 'output_1.csv'
-    is also taken, then 'output_2.csv', and so on until a name is found
-    that isn't taken.
-
-    Args:
-        base (str): base filename provided by function 'WriteOutput'
-        overwrite_allowed (bool): whether to overwrite the output file if it already exists. Disallowed by default.
-
-    Returns:
-        str: name for output file
-    '''
-    if (not os.path.exists(base)) or (overwrite_allowed==True): # If file name isn't taken or overwriting is allowed:
-        return base                                     # Just return original name for file.
-    name, ext = os.path.splitext(base)                  # Separate the filename and extension.
-    i = 1
-    while os.path.exists(f"{name}_{i}{ext}"):           # Until a name that isn't taken is found:
-        i += 1                                          # Increment by 1 to add to basename (e.g., 'output_1.csv")
-    return f"{name}_{i}{ext}"                           # Return first available name.
-
-def WriteOutput(base_name, termList, overwrite_allowed=False):
-    '''
-    Writes output from ScanFiles to a file of the specified name. The
-    file extension should be included in the name (.csv) as well.
-    See function 'GetAvailableFilename' for details on how output is handled
-    when a file of the specifed name already exists.
-
-    Args:
-        base_name (str): the name of the file to be written
-        termList (dict): words, filepaths, and line numbers as produced by 'ScanFiles'
-        overwrite_allowed (bool): whether to overwrite the output file if it already exists. Disallowed by default.
-    '''
-    with open(GetAvailableFilename(base_name, overwrite_allowed), 'w', newline='', encoding='utf-8') as f: # Opens file of given name to write output to.
-        writer = csv.writer(f)                                                          # Write output in CSV format.
-        writer.writerow(['Word', 'Filepath', 'Line Number'])                            # Write column headers.
-        for term, entries in termList.items():                                          # For each term in termList:
-            if entries:                                                                 # If term was found in any files:
-                writer.writerows([[term, path, line] for path, line in entries])        # Write each filepath and line number where term was found.
-            else:                                                                       # Otherwise, term wasn't found in any file:
-                writer.writerow([term, 'N/A', 'N/A'])                                   # Write 'N/A' to filepath and line number columns.
 
 def GetAllFiles(path):
     '''
@@ -156,6 +110,52 @@ def ScanFiles(path, termList, case_sensitive=False):
                             found_terms.add(original_term)                                          # Add term to found terms.
         except:
             pass                                                                                    # Quietly ignore unreadable files.
+
+def GetAvailableFilename(base, overwrite_allowed=False):
+    '''
+    If you don't want to overwrite an existing file, this function ensures that
+    repeatedly running this script with the same name for the output will
+    instead write the output to the next available name. For example, if
+    'output.csv' is taken, then this function will check if 'output_1.csv'
+    is also taken, then 'output_2.csv', and so on until a name is found
+    that isn't taken.
+
+    Args:
+        base (str): base filename provided by function 'WriteOutput'
+        overwrite_allowed (bool): whether to overwrite the output file if it already exists. Disallowed by default.
+
+    Returns:
+        str: name for output file
+    '''
+    if (not os.path.exists(base)) or (overwrite_allowed==True): # If file name isn't taken or overwriting is allowed:
+        return base                                             # Just return original name for file.
+    name, ext = os.path.splitext(base)                          # Separate the filename and extension.
+    i = 1
+    while os.path.exists(f"{name}_{i}{ext}"):                   # Until a name that isn't taken is found:
+        i += 1                                                  # Increment by 1 to add to basename (e.g., 'output_1.csv")
+    return f"{name}_{i}{ext}"                                   # Return first available name.
+
+def WriteOutput(base_name, termList, overwrite_allowed=False):
+    '''
+    Writes output from ScanFiles to a file of the specified name. The
+    file extension should be included in the name (.csv) as well.
+    See function 'GetAvailableFilename' for details on how output is handled
+    when a file of the specifed name already exists.
+
+    Args:
+        base_name (str): the name of the file to be written
+        termList (dict): words, filepaths, and line numbers as produced by 'ScanFiles'
+        overwrite_allowed (bool): whether to overwrite the output file if it already exists. Disallowed by default.
+    '''
+    with open(GetAvailableFilename(base_name, overwrite_allowed), 'w', newline='', encoding='utf-8') as f:  # Opens file of given name to write output to.
+        writer = csv.writer(f)                                                                              # Write output in CSV format.
+        writer.writerow(['Word', 'Filepath', 'Line Number'])                                                # Write column headers.
+        for term, entries in termList.items():                                                              # For each term in termList:
+            if entries:                                                                                     # If term was found in any files:
+                writer.writerows([[term, path, line] for path, line in entries])                            # Write each filepath and line number where term was found.
+            else:                                                                                           # Otherwise, term wasn't found in any file:
+                writer.writerow([term, 'N/A', 'N/A'])                                                       # Write 'N/A' to filepath and line number columns.
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scan files for terms and generate output.")
