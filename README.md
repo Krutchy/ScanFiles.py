@@ -24,14 +24,11 @@ Where SCANNED_FILEPATH is the file or directory/folder you want to search. Files
 
 It can also take several additional arguments in any order after SCANNED_FILEPATH:
 ```
---help
-                        Shows script syntax without actually running the script (in case this readme isn't up to date).
---term_list_filepath {TERM_LIST_FILEPATH}
-                        Path to the term list file (default: 'termList.csv')
---output_file_base_name {OUTPUT_FILE_BASE_NAME}
-                        Base name for the output file (default: 'output.csv')
---case_sensitive        Enable case-sensitive term matching (default: False)
---overwrite_allowed     Allow overwriting if a file already exists at the specified location (default: False)
+--help                                            Shows script syntax without actually running the script (in case this readme isn't up to date).
+--term_list_filepath {TERM_LIST_FILEPATH}         Path to the term list file (default: 'termList.csv')
+--output_file_base_name {OUTPUT_FILE_BASE_NAME}   Base name for the output file (default: 'output.csv')
+--case_sensitive                                  Enable case-sensitive term matching (default: False)
+--overwrite_allowed                               Allow overwriting if a file already exists at the specified location (default: False)
 ```
 These arguments are all optional; any you don't provide will use their specified defaults.
 
