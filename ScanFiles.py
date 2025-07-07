@@ -2,6 +2,7 @@ import argparse                                                     # https://do
 import csv                                                          # https://docs.python.org/3/library/csv.html                # License: Python Software Foundation (Version 2)
 from concurrent.futures import ThreadPoolExecutor, as_completed     # https://docs.python.org/3/library/concurrent.futures.html # License: Python Software Foundation (Version 2)
 from flashtext import KeywordProcessor                              # https://flashtext.readthedocs.io/en/latest/               # License: MIT
+import multiprocessing                                              # https://docs.python.org/3/library/multiprocessing.html    # License: Python Software Foundation (Version 2)
 import os                                                           # https://docs.python.org/3/library/os.html                 # License: Python Software Foundation (Version 2)
 import sys                                                          # https://docs.python.org/3/library/sys.html                # License: Python Software Foundation (Version 2)
 from tqdm import tqdm                                               # https://github.com/tqdm/tqdm                              # License: MIT
@@ -103,7 +104,8 @@ def ScanFiles(path, termList, case_sensitive=False):
     all_files = GetAllFiles(path) if os.path.isdir(path) else [path]
     keyword_processor = BuildKeywordProcessor(termList.keys(), case_sensitive)
 
-    with ThreadPoolExecutor() as executor:                                                                  # Scans multiple files in parallel.
+    max_threads = min(32, (multiprocessing.cpu_count() or 1) * 5)                                           # Scales threads to available CPU resources.
+    with ThreadPoolExecutor() as executor:                                                                  # Scans files on parallel threads.
         futures = [
             executor.submit(process_file, filepath, path, keyword_processor, case_sensitive)                # Submit request to thread pool
             for filepath in all_files                                                                       # For each file
