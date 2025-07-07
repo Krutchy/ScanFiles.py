@@ -1,9 +1,10 @@
-import argparse                         # https://docs.python.org/3/library/argparse.html    # License: Python Software Foundation (Version 2)
-import csv                              # https://docs.python.org/3/library/csv.html         # License: Python Software Foundation (Version 2)
-from flashtext import KeywordProcessor  # https://flashtext.readthedocs.io/en/latest/        # License: MIT
-import os                               # https://docs.python.org/3/library/os.html          # License: Python Software Foundation (Version 2)
-import sys                              # https://docs.python.org/3/library/sys.html         # License: Python Software Foundation (Version 2)
-from tqdm import tqdm                   # https://github.com/tqdm/tqdm                       # License: MIT
+import argparse                                                     # https://docs.python.org/3/library/argparse.html           # License: Python Software Foundation (Version 2)
+import csv                                                          # https://docs.python.org/3/library/csv.html                # License: Python Software Foundation (Version 2)
+from concurrent.futures import ThreadPoolExecutor, as_completed     # https://docs.python.org/3/library/concurrent.futures.html # License: Python Software Foundation (Version 2)
+from flashtext import KeywordProcessor                              # https://flashtext.readthedocs.io/en/latest/               # License: MIT
+import os                                                           # https://docs.python.org/3/library/os.html                 # License: Python Software Foundation (Version 2)
+import sys                                                          # https://docs.python.org/3/library/sys.html                # License: Python Software Foundation (Version 2)
+from tqdm import tqdm                                               # https://github.com/tqdm/tqdm                              # License: MIT
 
 def LoadTermList(file, case_sensitive):
     '''
@@ -63,38 +64,54 @@ def BuildKeywordProcessor(terms, case_sensitive):
         kp.add_keyword(term)
     return kp
 
-def ScanFiles(path, termList, case_sensitive=False):
+def process_file(filepath, root_path, keyword_processor, case_sensitive):
     '''
-    Mutates termList by adding filepaths where each term is found. By
-    design, this function does not count terms contained in other terms. 
-    For example, if 'token1' and 'token12' are both search terms, a file 
-    only containing 'token12' will not be considered to contain 'token1'.
-    Each file that is found to contain a term will be returned separately,
-    and it isn't checked whether a term appears multiple times in a single
-    line.
+    Scans a single file and returns a dictionary of found terms and their locations.
 
     Args:
-        path (str): filepath of directory to be searched through
-        termList (dict):
-            key (str): term to be searched for
-            value (str): filepath where term is found (if any)
-            value (int): line number in filepath where term was found (if any)
-        case_sensitive (bool): whether the search will be case_sensitive. Case insensitive by default.
+        filepath (str): path to file to be scanned
+        root_path (str): root directory to compute relative paths
+        keyword_processor (KeywordProcessor): initialized processor
+        case_sensitive (bool): flag for case sensitivity
+
+    Returns:
+        dict: { term: [(relative_filepath, line_number), ...], ... }
+    '''
+    term_hits = {}                                                                  # Initialize dict for hits
+    try:
+        with open(filepath, 'r', encoding='utf-8-sig', errors='ignore') as f:       # Opened in utf-8-sig as some file encodings have hidden characters at the beginning.
+            for i, line in enumerate(f, 1):                                         # For each line in the file:
+                check_line = line if case_sensitive else line.lower()               # Account for case sensitivity (if desired).
+                found_terms = set(keyword_processor.extract_keywords(check_line))   # Extract found terms from line into a set.
+                if found_terms:                                                     # If any terms were found:
+                    relpath = os.path.relpath(filepath, start=root_path)            # Get the relative path for the file.
+                    for term in found_terms:                                        # For each found term:
+                        term_hits.setdefault(term, []).append((relpath, i))         # Add the filepath and line number to that term's key in term_hits.
+    except:
+        pass                                                                        # Quietly ignore unreadable files.
+    return term_hits
+
+def ScanFiles(path, termList, case_sensitive=False):
+    '''
+    Scans all files under the path using a thread pool, updating termList in-place.
+
+    Args:
+        path (str): directory or file to scan
+        termList (dict): maps each term to a list of (filepath, line number)
+        case_sensitive (bool): case-sensitive matching toggle
     '''
     all_files = GetAllFiles(path) if os.path.isdir(path) else [path]
     keyword_processor = BuildKeywordProcessor(termList.keys(), case_sensitive)
 
-    for filepath in tqdm(all_files, desc="Scanning files", unit="file"):                            # For each file:
-        relpath = os.path.relpath(filepath, start=path)                                             # Return a relative path to the root directory
-        try:
-            with open(filepath, 'r', encoding='utf-8-sig', errors='ignore') as f:                   # utf-8-sig avoids quirks due to hidden characters at the start of a file in certain encodings
-                for i, line in enumerate(f, 1):                                                     # For each line of the file:
-                    check_line = line if case_sensitive else line.lower()                           # Account for case sensitivity if needed.
-                    found_terms = set(keyword_processor.extract_keywords(check_line))               # Get a set of all terms found in the line.
-                    for original_term in found_terms:                                               # For each term found:
-                        termList[original_term].append((relpath, i))                                # Add that term to found terms.
-        except:
-            pass                                                                                    # Quietly ignore unreadable files.
+    with ThreadPoolExecutor() as executor:                                                                  # Scans multiple files in parallel.
+        futures = [
+            executor.submit(process_file, filepath, path, keyword_processor, case_sensitive)                # Submit request to thread pool
+            for filepath in all_files                                                                       # For each file
+        ]
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Scanning files", unit="file"):  # As scanning finishes for each file:
+            result = future.result()                                                                        # Get the file's results.
+            for term, hits in result.items():                                                               # For each term found:
+                termList[term].extend(hits)                                                                 # Add the results to the final termList.
 
 def GetAvailableFilename(base, overwrite_allowed=False):
     '''
