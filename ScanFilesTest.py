@@ -2,7 +2,7 @@ import unittest
 import tempfile
 import os
 import shutil
-from ScanFiles import LoadTermList, GetAvailableFilename, WriteOutput, GetAllFiles, BuildAutomaton, ScanFiles
+from ScanFiles import LoadTermList, GetAvailableFilename, WriteOutput, GetAllFiles, BuildKeywordProcessor, ScanFiles
 
 class ScanFilesTest(unittest.TestCase):
     def setUp(self):
@@ -39,11 +39,21 @@ class ScanFilesTest(unittest.TestCase):
         files = GetAllFiles(self.test_dir)
         self.assertIn(test_file, files)
 
-    def test_BuildAutomaton(self):
-        terms = {"cat": [], "dog": []}
-        automaton = BuildAutomaton(terms, case_sensitive=False)
-        matches = list(automaton.iter("a cat and a dog"))
+    def test_BuildKeywordProcessor(self):
+        terms = {"cat": [], "dog": [], "wolf": []}
+        keyword_processor = BuildKeywordProcessor(terms.keys(), case_sensitive=False)
+        matches = set(keyword_processor.extract_keywords('I have one cat and one dog'))
         self.assertEqual(len(matches), 2)
+        self.assertIsNot(False, 'cat' in matches)
+        self.assertIsNot(False, 'dog' in matches)
+        self.assertIsNot(True, 'wolf' in matches)
+
+        matches = set(keyword_processor.extract_keywords('I have one cat and one wolf'))
+        self.assertEqual(len(matches), 2)
+        self.assertIsNot(False, 'cat' in matches)
+        self.assertIsNot(True, 'dog' in matches)
+        self.assertIsNot(False, 'wolf' in matches)
+
 
     def test_ScanFiles(self):
         file_path = os.path.join(self.test_dir, "sample.txt")
@@ -64,7 +74,6 @@ class ScanFilesTest(unittest.TestCase):
         self.assertEqual(len(terms["apple"]), 1)
         self.assertEqual(len(terms["Apple"]), 1)
 
-        # Test #: Terms enclosed in quotes or parentheses
         terms = {"apple": []}
         file_path = os.path.join(self.test_dir, "quote.txt")
         with open(file_path, "w") as f:
@@ -84,7 +93,6 @@ class ScanFilesTest(unittest.TestCase):
         self.assertEqual(len(terms["naïve"]), 1)
         self.assertEqual(len(terms["💡"]), 1)
 
-        # Test #: Overlapping search terms
         terms = {"apple": [], "apple1": [], "apple1_1": []}
         file_path = os.path.join(self.test_dir, "overlap.txt")
         with open(file_path, "w") as f:
@@ -110,7 +118,7 @@ class ScanFilesTest(unittest.TestCase):
         result_overwrite = GetAvailableFilename(base_name, overwrite_allowed=True)
         self.assertEqual(result_overwrite, base_name)
 
-        # Case 3: File exists, overwrite not allowed — should return incremented name
+        # Case 3: File exists, but overwrite not allowed — should return incremented name
         result_incremented = GetAvailableFilename(base_name, overwrite_allowed=False)
         expected_incremented = base_name.replace(".csv", "_1.csv")
         self.assertEqual(result_incremented, expected_incremented)

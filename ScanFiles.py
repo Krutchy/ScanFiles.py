@@ -1,9 +1,9 @@
-import ahocorasick         # https://pyahocorasick.readthedocs.io/en/latest/
-import argparse            # https://docs.python.org/3/library/argparse.html
-import csv                 # https://docs.python.org/3/library/csv.html
-import os                  # https://docs.python.org/3/library/os.html
-import sys                 # https://docs.python.org/3/library/sys.html
-from tqdm import tqdm      # https://github.com/tqdm/tqdm
+import argparse                         # https://docs.python.org/3/library/argparse.html    # License: 
+import csv                              # https://docs.python.org/3/library/csv.html         # License: 
+from flashtext import KeywordProcessor  # https://flashtext.readthedocs.io/en/latest/        # License: MIT
+import os                               # https://docs.python.org/3/library/os.html          # License: 
+import sys                              # https://docs.python.org/3/library/sys.html         # License: 
+from tqdm import tqdm                   # https://github.com/tqdm/tqdm                       # License: MIT
 
 def LoadTermList(file, case_sensitive):
     '''
@@ -45,29 +45,23 @@ def GetAllFiles(path):
             files.append(os.path.join(root, filename))  # Add that filepath to 'files'
     return files
 
-def BuildAutomaton(terms, case_sensitive):
+def BuildKeywordProcessor(terms, case_sensitive):
     '''
-    Automatons are a class from Aho-Corasick that resemble tries
-    in structure but have invocable methods similar to a dict in Python.
-    It's possible to serialize or 'pickle' an automaton so it wouldn't 
-    need to be rebuilt each time the script is ran (which might be more 
-    performant for larger lists of terms) but that isn't done in this script.
+    Builds keyword processor using 'flashtext' package. Flashtext
+    has its own algorithm that extracts keywords from a string argument
+    using the function 'extract_keywords(str)' to return a list.
 
     Args:
-        terms (str[]): the keys from the termList created by LoadTermList
-        case_sensitive (bool): whether or not keys will be cast to lowercase
+        terms (str[]): the keys from the termList dict
+        case_sensitive (bool): whether or not the terms will be cast to lowercase
 
     Returns:
-        termAutomaton (ahocorasick.Automaton): the object holding the terms
-    to check for in the file list. This is separate from the termList holding
-    the filepaths where each term is found in 'ScanFiles'.
+        kp (KeywordProcessor): class containing terms to be searched for in 'ScanFiles'
     '''
-    termAutomaton = ahocorasick.Automaton()             # Initialized but not actually made into automaton yet.
-    for term in terms:                                  # For each term:
-        key = term if case_sensitive else term.lower()  # Account for case sensitivity if needed.
-        termAutomaton.add_word(key, term)               # Add term to automaton
-    termAutomaton.make_automaton()                      # Make into automaton.
-    return termAutomaton
+    kp = KeywordProcessor(case_sensitive=case_sensitive)
+    for term in terms:
+        kp.add_keyword(term)
+    return kp
 
 def ScanFiles(path, termList, case_sensitive=False):
     '''
@@ -88,7 +82,7 @@ def ScanFiles(path, termList, case_sensitive=False):
         case_sensitive (bool): whether the search will be case_sensitive. Case insensitive by default.
     '''
     all_files = GetAllFiles(path) if os.path.isdir(path) else [path]
-    automaton = BuildAutomaton(termList.keys(), case_sensitive)
+    keyword_processor = BuildKeywordProcessor(termList.keys(), case_sensitive)
 
     for filepath in tqdm(all_files, desc="Scanning files", unit="file"):                            # For each file:
         relpath = os.path.relpath(filepath, start=path)                                             # Return a relative path to the root directory
@@ -96,18 +90,9 @@ def ScanFiles(path, termList, case_sensitive=False):
             with open(filepath, 'r', encoding='utf-8-sig', errors='ignore') as f:                   # utf-8-sig avoids quirks due to hidden characters at the start of a file in certain encodings
                 for i, line in enumerate(f, 1):                                                     # For each line of the file:
                     check_line = line if case_sensitive else line.lower()                           # Account for case sensitivity if needed.
-                    found_terms = set()                                                             # Only find each term once per line.
-                    for end_idx, original_term in automaton.iter(check_line):                       # For every match found in a line:
-                        start_idx = end_idx - len(original_term) + 1                                # Calculate index where match starts.
-
-                        before = check_line[start_idx - 1] if start_idx > 0 else ' '                # If character before match,
-                        after = check_line[end_idx + 1] if end_idx + 1 < len(check_line) else ' '   # Or character after match
-                        if before.isalnum() or after.isalnum():                                     # Is an alphanumeric string:
-                            continue                                                                # Then the match is actually part of a larger word, so we'll skip it.
-
-                        if original_term not in found_terms:                                        # If we haven't found the term in the line yet:
-                            termList[original_term].append((relpath, i))                            # Add filepath and line number to termList.
-                            found_terms.add(original_term)                                          # Add term to found terms.
+                    found_terms = set(keyword_processor.extract_keywords(check_line))               # Get a set of all terms found in the line.
+                    for original_term in found_terms:                                               # For each term found:
+                        termList[original_term].append((relpath, i))                                # Add that term to found terms.
         except:
             pass                                                                                    # Quietly ignore unreadable files.
 
