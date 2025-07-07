@@ -85,14 +85,13 @@ def ScanFiles(path, termList, case_sensitive=False):
     keyword_processor = BuildKeywordProcessor(termList.keys(), case_sensitive)
 
     for filepath in tqdm(all_files, desc="Scanning files", unit="file"):                            # For each file:
-        relpath = os.path.relpath(filepath, start=path)                                             # Return a relative path to the root directory
         try:
             with open(filepath, 'r', encoding='utf-8-sig', errors='ignore') as f:                   # utf-8-sig avoids quirks due to hidden characters at the start of a file in certain encodings
                 for i, line in enumerate(f, 1):                                                     # For each line of the file:
                     check_line = line if case_sensitive else line.lower()                           # Account for case sensitivity if needed.
                     found_terms = set(keyword_processor.extract_keywords(check_line))               # Get a set of all terms found in the line.
                     for original_term in found_terms:                                               # For each term found:
-                        termList[original_term].append((relpath, i))                                # Add that term to found terms.
+                        termList[original_term].append((os.path.relpath(filepath, start=path), i))  # Add relative filepath and line number for term to termList.
         except:
             pass                                                                                    # Quietly ignore unreadable files.
 
