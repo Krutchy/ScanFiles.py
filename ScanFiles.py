@@ -1,8 +1,8 @@
-import argparse                         # https://docs.python.org/3/library/argparse.html    # License: 
-import csv                              # https://docs.python.org/3/library/csv.html         # License: 
+import argparse                         # https://docs.python.org/3/library/argparse.html    # License: Python Software Foundation (Version 2)
+import csv                              # https://docs.python.org/3/library/csv.html         # License: Python Software Foundation (Version 2)
 from flashtext import KeywordProcessor  # https://flashtext.readthedocs.io/en/latest/        # License: MIT
-import os                               # https://docs.python.org/3/library/os.html          # License: 
-import sys                              # https://docs.python.org/3/library/sys.html         # License: 
+import os                               # https://docs.python.org/3/library/os.html          # License: Python Software Foundation (Version 2)
+import sys                              # https://docs.python.org/3/library/sys.html         # License: Python Software Foundation (Version 2)
 from tqdm import tqdm                   # https://github.com/tqdm/tqdm                       # License: MIT
 
 def LoadTermList(file, case_sensitive):
