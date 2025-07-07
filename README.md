@@ -3,7 +3,7 @@ Scans given files for a given list of terms and returns the filepaths and line n
 ## Package Requirements
 The script uses the following packages:
 ```
-ahocorasick    # For searching through files in a more performant way
+flashtext      # For searching through files for terms in a more performant way
 argparse       # For creating the argument syntax and --help flag
 csv            # For writing in CSV
 os             # For reading/writing files
@@ -12,7 +12,7 @@ tqdm           # For displaying a progress bar as the script runs
 ```
 If you don't have any of these packages, you can install them by running the following in your terminal:
 ```
-pip install ahocorasick argparse csv os sys tqdm
+pip install flashtext argparse csv os sys tqdm
 ```
 **Note:** If your system says 'pip' isn't installed or a command, 'pip3' might work instead.
 ## Running the Script
