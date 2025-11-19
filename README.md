@@ -1,7 +1,7 @@
 # FileScan.py
 Scans given files for a given list of terms and returns the filepaths and line numbers where every term was found. Terms that are not found in any files only appear once, with the filepath and line number marked 'N/A'.
 
-Intended use case is to check for the presence of multiple libraries in a project codebase.
+Intended use case is to check for the presence of multiple libraries in a project codebase, and to identify if any specified libraries don't appear at all.
 ## Package Requirements
 The script uses the following packages:
 ```
